@@ -10,6 +10,8 @@ from sumy.summarizers.lsa import LsaSummarizer
 from sumy.summarizers.luhn import LuhnSummarizer
 import time
 
+nltk.download('punkt_tab')
+
 # Download necessary NLTK data
 try:
     nltk.data.find('tokenizers/punkt')
