@@ -2,7 +2,19 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import os
 from dotenv import load_dotenv
 import streamlit as st
-from transformers import pipeline
+import nltk
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.lex_rank import LexRankSummarizer
+from sumy.summarizers.lsa import LsaSummarizer
+from sumy.summarizers.luhn import LuhnSummarizer
+import time
+
+# Download necessary NLTK data
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
 
 load_dotenv()
 
@@ -26,25 +38,33 @@ def get_youtube_transcript(video_url: str):
         st.error(f"Error fetching transcript: {e}")
         return None
 
-@st.cache_resource
-def load_summarizer():
-    # Load the BART model for summarization
-    return pipeline("summarization", model="facebook/bart-large-cnn")
+def summarize_text(text, summarizer_type, sentences_count=10):
+    parser = PlaintextParser.from_string(text, Tokenizer("english"))
+    
+    if summarizer_type == "LexRank":
+        summarizer = LexRankSummarizer()
+    elif summarizer_type == "LSA":
+        summarizer = LsaSummarizer()
+    else:  # Luhn
+        summarizer = LuhnSummarizer()
+        
+    summary = summarizer(parser.document, sentences_count)
+    return " ".join([str(sentence) for sentence in summary])
     
 def summarize_transcript():
     st.title("YouTube Transcript Summarizer")
     
-    # Load the summarizer model
-    summarizer = load_summarizer()
-    
     video_url = st.text_input("Input YouTube URL")
 
-    # Add sliders for parameters
+    # Add options for summarization
     col1, col2 = st.columns(2)
     with col1:
-        max_length = st.slider("Summary Length (tokens)", 100, 500, 250, 10)
+        summarizer_type = st.selectbox(
+            "Summarization Algorithm",
+            ["LexRank", "LSA", "Luhn"]
+        )
     with col2:
-        min_length = st.slider("Minimum Length (tokens)", 30, 200, 100, 10)
+        sentences_count = st.slider("Number of Sentences", 5, 30, 10)
 
     # Create a button to trigger the start of the summarization
     if st.button("Summarize"):
@@ -56,21 +76,40 @@ def summarize_transcript():
 
         if transcript:
             with st.spinner("Generating summary..."):
+                start_time = time.time()
+                
                 try:
-                    # Generate summary using BART model
-                    summary_output = summarizer(transcript, max_length=max_length, min_length=min_length, do_sample=False)
-                    summary = summary_output[0]['summary_text']
+                    # Generate summary using selected algorithm
+                    summary = summarize_text(transcript, summarizer_type, sentences_count)
+                    
+                    end_time = time.time()
+                    st.success(f"Summary generated in {end_time - start_time:.2f} seconds")
                     
                     st.subheader("Summary")
                     st.markdown(summary)
 
+                    # Add structured notes based on the summary
+                    st.subheader("Structured Notes")
+                    
+                    # Split summary into sentences for structured notes
+                    sentences = summary.split(". ")
+                    for i, sentence in enumerate(sentences):
+                        if sentence:  # Skip empty sentences
+                            st.markdown(f"**Point {i+1}:** {sentence}")
+                    
                     # File name input for download
                     file_name = st.text_input("Enter file name for download (without extension):", "youtube_summary")
+                    
+                    # Format markdown for download
+                    markdown_content = f"# YouTube Video Summary\n\n## Summary\n\n{summary}\n\n## Structured Notes\n\n"
+                    for i, sentence in enumerate(sentences):
+                        if sentence:
+                            markdown_content += f"**Point {i+1}:** {sentence}\n\n"
                     
                     # Add download button for summary
                     st.download_button(
                         label="Download summary as markdown",
-                        data=summary,
+                        data=markdown_content,
                         file_name=f"{file_name}.md",
                         mime="text/markdown"
                     )
