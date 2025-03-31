@@ -52,7 +52,7 @@ def summarize_transcript():
             payload = {
                 "model": "sonar-pro",
                 "messages": [
-                    {"role": "user", "content": f"Define everything so it's clear, summarize this transcript into high quality and organized notes, and provide 3-5 examples, analogies, anything to help understand, then in the end provide additional resources and when you put the additional resources, but the actual link in the output: {transcript}"}
+                    {"role": "user", "content": f"Define everything so it's clear, summarize this transcript into high quality and organized notes, and provide 3-5 examples, analogies, anything to help understand, then in the end provide additional resources and when you put the additional resources, but the actual link in the output. Also, DEFINE EVERYTHING (techniques, methods, formulas, approaches, applications, etc.), don't just put it there for us to search up; that is YOUR job! Here is the transcript: {transcript}"}
                 ],
                 "max_tokens": 2000,
                 "temperature": temperature,
