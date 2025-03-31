@@ -104,7 +104,7 @@ def summarize_transcript():
                 "messages": [
                     {"role": "user", "content": f"Define everything so it's clear, summarize this transcript into high quality and organized notes, and provide 3-5 examples, analogies, anything to help understand, then in the end provide additional resources:{transcript}"}
                 ],
-                "max_tokens": 1500,
+                "max_tokens": 1000,
                 "temperature": temperature,
                 "presence_penalty": presence_penalty
             }
@@ -127,16 +127,20 @@ def summarize_transcript():
                     summary = response_json["choices"][0]["message"]["content"]
                     st.markdown(summary)
 
+                    # User input for file name
+                    file_name = st.text_input("Enter file name for download (without extension):", "youtube_summary")
+                    
                     st.download_button(
                         label="Download summary as markdown",
                         data=summary,
-                        file_name="youtube_summary.md",
+                        file_name=f"{file_name}.md",
                         mime="text/markdown"
                     )
                 else:
                     st.error(f"Error in API response: {response_json}")
             except Exception as e:
                 st.error(f"Error calling Perplexity API: {e}")
+
 
 if __name__ == "__main__":
     summarize_transcript()
