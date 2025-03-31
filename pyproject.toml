@@ -1,0 +1,24 @@
+[project]
+name = "yt-transcript-to-notes"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "ipykernel>=6.29.5",
+    "nltk>=3.9.1",
+    "openai>=1.69.0",
+    "pandas>=2.2.3",
+    "python-dotenv>=1.1.0",
+    "regex>=2024.11.6",
+    "streamlit>=1.44.0",
+    "torch>=2.6.0",
+    "transformers>=4.50.3",
+    "youtube-transcript-api>=1.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.5",
+    "uv>=0.6.11",
+]
