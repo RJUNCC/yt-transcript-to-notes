@@ -54,7 +54,7 @@ def summarize_transcript():
                 "messages": [
                     {"role": "user", "content": f"Define everything so it's clear, summarize this transcript into high quality and organized notes, and provide 3-5 examples, analogies, anything to help understand, then in the end provide additional resources:{transcript}"}
                 ],
-                "max_tokens": 1000,
+                "max_tokens": 2000,
                 "temperature": temperature,
                 "presence_penalty": presence_penalty
 
